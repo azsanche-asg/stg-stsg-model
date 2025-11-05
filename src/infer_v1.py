@@ -29,6 +29,16 @@ def main():
         base_out=os.path.join(os.path.dirname(os.path.abspath(args.out)), 'experiments'),
         config_path=args.config,
     )
+    tag = []
+    if args.no_repeat:
+        tag.append('noRepeat')
+    if args.no_split:
+        tag.append('noSplit')
+    if args.no_renderer:
+        tag.append('noRenderer')
+    if tag:
+        run_dir = run_dir + '_' + '_'.join(tag)
+        os.makedirs(run_dir, exist_ok=True)
     print(f'\n🧪 Starting new experiment run at {run_dir}\n')
     os.makedirs(args.out, exist_ok=True)
 

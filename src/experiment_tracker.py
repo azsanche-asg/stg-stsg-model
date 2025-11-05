@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def create_run_folder(base_out="stg-synthetic-eval/outputs/experiments", config_path=None):
-    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M')
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     run_dir = os.path.join(base_out, f"run_{timestamp}")
     os.makedirs(run_dir, exist_ok=True)
     if config_path and os.path.exists(config_path):
