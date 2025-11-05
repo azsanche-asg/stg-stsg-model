@@ -18,6 +18,9 @@ def main():
     parser.add_argument("--images", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--config", default="configs/v1_facades.yaml")
+    parser.add_argument('--no_repeat', action='store_true', help='disable horizontal repeat reasoning')
+    parser.add_argument('--no_split', action='store_true', help='disable vertical split reasoning')
+    parser.add_argument('--no_renderer', action='store_true', help='disable feature-space reconstruction scoring')
     args = parser.parse_args()
 
     cfg = yaml.safe_load(open(args.config, "r", encoding="utf-8"))
@@ -48,22 +51,34 @@ def main():
             if mask_boundary is not None:
                 feature_map = np.maximum(feature_map, mask_boundary)
 
-        floors_list = suggest_floors(
-            gray,
-            depth=depth,
-            mask=mask,
-            fmin=cfg["search"]["floors"][0],
-            fmax=cfg["search"]["floors"][1],
-        )
+        if args.no_split:
+            floors_list = [(1, [(0, height)])]
+        else:
+            floors_list = suggest_floors(
+                gray,
+                depth=depth,
+                mask=mask,
+                fmin=cfg["search"]["floors"][0],
+                fmax=cfg["search"]["floors"][1],
+            )
         if not floors_list:
             floors_list = [(3, [(0, height // 3), (height // 3, 2 * height // 3), (2 * height // 3, height)])]
 
-        _ = suggest_repeats_per_floor(
-            img,
-            floors_list[0][1],
-            rmin=cfg["search"]["repeats"][0],
-            rmax=cfg["search"]["repeats"][1],
-        )
+        if args.no_repeat:
+            rep = 1
+            repeat_min = repeat_max = 1
+        else:
+            repeat_min = cfg["search"]["repeats"][0]
+            repeat_max = cfg["search"]["repeats"][1]
+            rep = suggest_repeats_per_floor(
+                img,
+                floors_list[0][1],
+                rmin=repeat_min,
+                rmax=repeat_max,
+            )
+
+        if args.no_renderer:
+            feature_map = np.zeros_like(feature_map)
 
         topk = search_best(
             height,
@@ -74,8 +89,8 @@ def main():
             cfg["loss"]["lambda_rec"],
             cfg["loss"]["lambda_mdl"],
             cfg["loss"]["mdl_beta_depth"],
-            rmin=cfg["search"]["repeats"][0],
-            rmax=cfg["search"]["repeats"][1],
+            rmin=repeat_min,
+            rmax=repeat_max,
             beam_width=cfg["search"]["beam_width"],
         )
 
