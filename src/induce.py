@@ -43,16 +43,16 @@ def detect_floors(gray, max_floors=6):
     return bands, floors
 
 
-def detect_repeat_in_band(gray, band, search=20):
+def detect_repeat_in_band(gray, band, search=30):
     y0, y1 = band
     col_proj = _col_projection(gray, y0, y1)
     autoc = _autocorr(col_proj)
     if autoc.size < 3:
         return 1
-    window = autoc[1 : 1 + max(5, search)]
-    period = int(np.argmax(window) + 1)
+    candidates = np.argsort(autoc[1:search])[-5:] + 1
     width = gray.shape[1]
-    count = max(1, min(width // max(period, 1), 12))
+    counts = [max(1, min(width // max(period, 1), 12)) for period in candidates]
+    count = int(np.median(counts))
     return count
 
 
