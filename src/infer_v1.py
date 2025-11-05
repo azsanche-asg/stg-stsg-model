@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 
+from .experiment_tracker import create_run_folder
 from .features import depth_edges, edge_map, load_inputs, seg_boundary
 from .proposals import suggest_floors, suggest_repeats_per_floor
 from .scorer import search_best
@@ -20,6 +21,12 @@ def main():
     args = parser.parse_args()
 
     cfg = yaml.safe_load(open(args.config, "r", encoding="utf-8"))
+    # Create experiment run folder for predictions
+    run_dir, timestamp = create_run_folder(
+        base_out=os.path.join(os.path.dirname(os.path.abspath(args.out)), 'experiments'),
+        config_path=args.config,
+    )
+    print(f'\n🧪 Starting new experiment run at {run_dir}\n')
     os.makedirs(args.out, exist_ok=True)
 
     files = sorted(
@@ -84,6 +91,9 @@ def main():
         }
         with open(os.path.join(args.out, f"{stem}_pred.json"), "w", encoding="utf-8") as handle:
             json.dump(grammar, handle, indent=2)
+
+    print(f'\n✅ Inference complete. Predictions saved to {args.out}\n')
+    print(f'🗂️  Run folder registered at: {run_dir}')
 
 
 if __name__ == "__main__":
