@@ -67,6 +67,7 @@ def main():
         env = os.environ.copy()
         eval_path = os.path.abspath('../stg-synthetic-eval')
         env['PYTHONPATH'] = env.get('PYTHONPATH', '') + ':' + eval_path
+        env['EXP_TAG'] = name
         run_cmd(cmd_eval, cwd=eval_path, env=env)
 
         print(f"✅ Finished {name} at {datetime.datetime.now()}\n")
