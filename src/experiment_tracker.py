@@ -6,9 +6,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def create_run_folder(base_out="stg-synthetic-eval/outputs/experiments", config_path=None):
+def create_run_folder(base_out="stg-synthetic-eval/outputs/experiments", config_path=None, tag=None):
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    run_dir = os.path.join(base_out, f"run_{timestamp}")
+    run_name = f"run_{timestamp}"
+    if tag:
+        run_name += f"_{tag}"
+    run_dir = os.path.join(base_out, run_name)
     os.makedirs(run_dir, exist_ok=True)
     if config_path and os.path.exists(config_path):
         shutil.copy(config_path, os.path.join(run_dir, 'config.yaml'))

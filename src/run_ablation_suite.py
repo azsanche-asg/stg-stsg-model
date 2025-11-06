@@ -4,6 +4,8 @@ import os
 import shutil
 import subprocess
 
+from src.experiment_tracker import create_run_folder
+
 
 def run_cmd(cmd, cwd=None, env=None):
     print(f"\n$ {' '.join(cmd)}")
@@ -42,8 +44,10 @@ def main():
                 except Exception as exc:
                     print(f'[warn] could not copy {src} -> {dst}: {exc}')
 
+        run_dir, timestamp = create_run_folder(tag=name, config_path=args.config)
         print(f"\n=== Running experiment: {name} ===")
         print(f"Output folder: {dataset_out}\n")
+        print(f"Experiment log folder: {run_dir}\n")
 
         cmd_infer = [
             'python', '-m', 'src.infer_v1',
