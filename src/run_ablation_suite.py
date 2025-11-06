@@ -45,8 +45,9 @@ def main():
         cfg_path = os.path.join('configs', 'synthetic_facades.yaml')
         cmd_eval = ['python', 'src/run_eval.py', '--config', cfg_path]
         env = os.environ.copy()
-        env['PYTHONPATH'] = env.get('PYTHONPATH', '') + ':' + os.path.abspath('..')
-        run_cmd(cmd_eval, cwd=os.path.abspath('../stg-synthetic-eval'), env=env)
+        eval_path = os.path.abspath('../stg-synthetic-eval')
+        env['PYTHONPATH'] = env.get('PYTHONPATH', '') + ':' + eval_path
+        run_cmd(cmd_eval, cwd=eval_path, env=env)
 
         print(f"✅ Finished {name} at {datetime.datetime.now()}\n")
 
