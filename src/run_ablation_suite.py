@@ -1,0 +1,57 @@
+import argparse
+import datetime
+import os
+import subprocess
+
+
+def run_cmd(cmd, cwd=None, env=None):
+    print(f"\n$ {' '.join(cmd)}")
+    result = subprocess.run(cmd, cwd=cwd, env=env, check=True)
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--images', required=True, help='Path to synthetic facade images')
+    parser.add_argument('--base_dataset', required=True, help='Base dataset path under stg-synthetic-eval/datasets')
+    parser.add_argument('--config', required=True, help='Path to v1_facades.yaml')
+    args = parser.parse_args()
+
+    experiments = [
+        {'name': 'v1_baseline', 'flags': []},
+        {'name': 'noRepeat', 'flags': ['--no_repeat']},
+        {'name': 'noSplit', 'flags': ['--no_split']},
+        {'name': 'noRenderer', 'flags': ['--no_renderer']},
+    ]
+
+    for exp in experiments:
+        name = exp['name']
+        flags = exp['flags']
+        dataset_out = f"{args.base_dataset}_{name}"
+        os.makedirs(dataset_out, exist_ok=True)
+
+        print(f"\n=== Running experiment: {name} ===")
+        print(f"Output folder: {dataset_out}\n")
+
+        cmd_infer = [
+            'python', '-m', 'src.infer_v1',
+            '--images', args.images,
+            '--out', dataset_out,
+            '--config', args.config,
+        ] + flags
+        run_cmd(cmd_infer, cwd=os.path.abspath('.'))
+
+        print(f"\nEvaluating {name} ...")
+        cfg_path = os.path.join('configs', 'synthetic_facades.yaml')
+        cmd_eval = ['python', 'src/run_eval.py', '--config', cfg_path]
+        env = os.environ.copy()
+        env['PYTHONPATH'] = env.get('PYTHONPATH', '') + ':' + os.path.abspath('..')
+        run_cmd(cmd_eval, cwd=os.path.abspath('../stg-synthetic-eval'), env=env)
+
+        print(f"✅ Finished {name} at {datetime.datetime.now()}\n")
+
+    print("\nAll experiments completed successfully. Check stg-synthetic-eval/outputs/experiments for logs.")
+
+
+if __name__ == '__main__':
+    main()
