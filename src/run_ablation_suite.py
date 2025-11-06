@@ -43,7 +43,11 @@ def main():
 
         print(f"\nEvaluating {name} ...")
         cfg_path = os.path.join('configs', 'synthetic_facades.yaml')
-        cmd_eval = ['python', 'src/run_eval.py', '--config', cfg_path]
+        cmd_eval = [
+            'python', 'src/run_eval.py',
+            '--config', cfg_path,
+            '--dataset', dataset_out,
+        ]
         env = os.environ.copy()
         eval_path = os.path.abspath('../stg-synthetic-eval')
         env['PYTHONPATH'] = env.get('PYTHONPATH', '') + ':' + eval_path
