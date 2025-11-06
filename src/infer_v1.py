@@ -42,6 +42,9 @@ def main():
     print(f'\n🧪 Starting new experiment run at {run_dir}\n')
     os.makedirs(args.out, exist_ok=True)
 
+    if not os.path.exists(args.out):
+        os.makedirs(args.out, exist_ok=True)
+
     files = sorted(
         [fname for fname in os.listdir(args.images) if fname.endswith(".png") and "_mask" not in fname and "_depth" not in fname]
     )

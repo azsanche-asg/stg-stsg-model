@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import os
+import shutil
 import subprocess
 
 
@@ -24,11 +25,22 @@ def main():
         {'name': 'noRenderer', 'flags': ['--no_renderer']},
     ]
 
+    gt_base = os.path.join(args.base_dataset)
     for exp in experiments:
         name = exp['name']
         flags = exp['flags']
-        dataset_out = f"{args.base_dataset}_{name}"
+        dataset_out = os.path.join(args.base_dataset + '_' + name)
         os.makedirs(dataset_out, exist_ok=True)
+
+        gt_files = [fname for fname in os.listdir(gt_base) if fname.endswith('_gt.json')]
+        for fname in gt_files:
+            src = os.path.join(gt_base, fname)
+            dst = os.path.join(dataset_out, fname)
+            if not os.path.exists(dst):
+                try:
+                    shutil.copy(src, dst)
+                except Exception as exc:
+                    print(f'[warn] could not copy {src} -> {dst}: {exc}')
 
         print(f"\n=== Running experiment: {name} ===")
         print(f"Output folder: {dataset_out}\n")
